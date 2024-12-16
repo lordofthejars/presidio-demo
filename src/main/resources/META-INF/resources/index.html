@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Word Anonymizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #input-area {
+            margin-bottom: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            font-size: 16px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+        #output-area {
+            width: 80%;
+            max-width: 600px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            min-height: 50px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+<h1>Live Word Anonymizer</h1>
+<div id="input-area">
+    <textarea id="input-text" placeholder="Type words here..."></textarea>
+</div>
+<div id="output-area" contenteditable="false"></div>
+
+<script>
+    const socket = new WebSocket('ws://localhost:8080'); // Replace with your backend WebSocket URL
+    const inputText = document.getElementById('input-text');
+    const outputArea = document.getElementById('output-area');
+
+    let buffer = "";
+
+    // Function to send words to backend
+    function sendWord(word) {
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send(word);
+        }
+    }
+
+    // Handle text input
+    inputText.addEventListener('input', (event) => {
+        const value = event.target.value;
+        const words = value.split(/\s+/);
+
+        // Extract the last word entered
+        if (words.length > 1 && buffer !== words.slice(0, -1).join(' ')) {
+            buffer = words.slice(0, -1).join(' ');
+            const lastWord = words[words.length - 2]; // Last complete word
+            if (lastWord.trim() !== "") {
+                sendWord(lastWord);
+            }
+        }
+    });
+
+    // Handle messages from the backend
+    socket.addEventListener('message', (event) => {
+        const returnedWord = event.data;
+        outputArea.innerHTML += `${returnedWord} `;
+    });
+
+    // Log connection status
+    socket.addEventListener('open', () => console.log('WebSocket connected.'));
+    socket.addEventListener('close', () => console.log('WebSocket disconnected.'));
+    socket.addEventListener('error', (error) => console.error('WebSocket error:', error));
+</script>
+</body>
+</html>
