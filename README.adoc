@@ -1,0 +1,5 @@
+= Presidio Demo
+
+This repo contains a demo of the integration between https://microsoft.github.io/presidio/[Presidio] and Quarkus using the https://docs.quarkiverse.io/quarkus-presidio/dev/[Quarkus Presidio Extension].
+
+A video of running demo is available at https://youtu.be/gPoN8YL8XNs

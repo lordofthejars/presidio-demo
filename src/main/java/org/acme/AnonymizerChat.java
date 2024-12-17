@@ -18,9 +18,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 @WebSocket(path = "/")
 public class AnonymizerChat {
 
-    static Replace REPLACE = new Replace("ANONYMIZED");
-    static Mask MASK = new Mask("*", 4, true);
-    static Redact REDACT = new Redact();
+
 
     @RestClient
     Analyzer analyzer;
@@ -31,6 +29,9 @@ public class AnonymizerChat {
     @OnTextMessage(broadcast = true)
     public String onMessage(String word) {
         final List<RecognizerResultWithAnaysisExplanation> analyzed = analyze(word, "en");
+        if (analyzed.isEmpty()) {
+            return word;
+        }
         return anonymize(word, analyzed).getText();
     }
 
@@ -42,6 +43,10 @@ public class AnonymizerChat {
         return analyzer
             .analyzePost(analyzeRequest);
     }
+
+    static Replace REPLACE = new Replace("ANONYMIZED");
+    static Mask MASK = new Mask("*", 4, true);
+    static Redact REDACT = new Redact();
 
     private AnonymizeResponse anonymize(String word, List<RecognizerResultWithAnaysisExplanation> recognizerResults) {
 
